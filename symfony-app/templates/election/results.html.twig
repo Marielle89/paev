@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block title %}Results{% endblock %}
+
+{% block body %}
+    <h1>Results</h1>
+
+    <p>
+        <a href="{{ path('election_setup') }}">Setup</a> |
+        <a href="{{ path('election_vote') }}">Vote</a> |
+        <a href="{{ path('election_tests') }}">Run Tests</a> |
+        <a href="{{ path('election_reset') }}">Reset</a>
+    </p>
+
+    <h2>Tally</h2>
+    <ul>
+        <li>A: {{ tally.A }}</li>
+        <li>B: {{ tally.B }}</li>
+    </ul>
+
+    <h2>Status</h2>
+    <pre>{{ dump(status) }}</pre>
+
+    <h2>Log</h2>
+    <pre>{{ log|join("\n") }}</pre>
+{% endblock %}

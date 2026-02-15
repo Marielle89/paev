@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+{% block title %}Reset{% endblock %}
+
+{% block body %}
+    <h1>Election state cleared 🧹</h1>
+
+    <p>
+        <a href="{{ path('election_setup') }}">Setup</a> |
+        <a href="{{ path('election_vote') }}">Vote</a>
+    </p>
+{% endblock %}

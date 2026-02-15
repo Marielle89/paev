@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+{% block title %}Vote{% endblock %}
+
+{% block body %}
+    <h1>Vote (RSA + EDS) 🗳️</h1>
+
+    <p>
+        <a href="{{ path('election_setup') }}">Setup</a> |
+        <a href="{{ path('election_results') }}">Results</a> |
+        <a href="{{ path('election_tests') }}">Run Tests</a> |
+        <a href="{{ path('election_reset') }}">Reset</a>
+    </p>
+
+    <h2>State</h2>
+    <ul>
+        <li>CEC public key: e={{ state.cecPublic.e|slice(0,20) }}..., n={{ state.cecPublic.n|slice(0,20) }}...</li>
+        <li>Tally: A={{ state.tally.A }}, B={{ state.tally.B }}</li>
+        <li>Voted count: {{ state.votedCount }}</li>
+    </ul>
+
+    {% if message %}
+        <h2>Last action</h2>
+        <pre>{{ dump(message) }}</pre>
+    {% endif %}
+
+    <h2>Cast vote</h2>
+    <form method="post">
+        <label>Voter:</label>
+        <select name="voter">
+            {% for v in voters %}
+                <option value="{{ v }}">{{ v }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Candidate:</label>
+        <select name="candidate">
+            {% for c in candidates %}
+                <option value="{{ c }}">{{ c }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit">Send ballot</button>
+    </form>
+
+    <p><small>Для тесту #2 вибери <b>Bob</b> (not auth).</small></p>
+{% endblock %}
