@@ -116,4 +116,70 @@ final readonly class RsaService
 
         return gmp_nextprime($num);
     }
+
+    public function randomCoprimeR(string $nDec): string
+    {
+        $n = gmp_init($nDec, 10);
+
+        while (true) {
+            // r in [2..n-2]
+            $r = gmp_random_range(gmp_init(2), gmp_sub($n, 2));
+            if (gmp_cmp(gmp_gcd($r, $n), 1) === 0) {
+                return gmp_strval($r, 10);
+            }
+        }
+    }
+
+// m' = m * r^e mod n
+    public function blind(string $mDec, string $rDec, string $eDec, string $nDec): string
+    {
+        $m = gmp_init($mDec, 10);
+        $r = gmp_init($rDec, 10);
+        $e = gmp_init($eDec, 10);
+        $n = gmp_init($nDec, 10);
+
+        $re = gmp_powm($r, $e, $n);
+        $mp = gmp_mod(gmp_mul($m, $re), $n);
+
+        return gmp_strval($mp, 10);
+    }
+
+// s' = (m')^d mod n  (ЦВК підписує “всліпу”)
+    public function blindSign(string $mPrimeDec, string $dDec, string $nDec): string
+    {
+        $mp = gmp_init($mPrimeDec, 10);
+        $d  = gmp_init($dDec, 10);
+        $n  = gmp_init($nDec, 10);
+
+        $sp = gmp_powm($mp, $d, $n);
+        return gmp_strval($sp, 10);
+    }
+
+// s = s' * r^{-1} mod n  (виборець знімає маску)
+    public function unblind(string $sPrimeDec, string $rDec, string $nDec): string
+    {
+        $sp = gmp_init($sPrimeDec, 10);
+        $r  = gmp_init($rDec, 10);
+        $n  = gmp_init($nDec, 10);
+
+        $rinv = gmp_invert($r, $n);
+        if ($rinv === false) {
+            throw new \RuntimeException('No inverse for r');
+        }
+
+        $s = gmp_mod(gmp_mul($sp, $rinv), $n);
+        return gmp_strval($s, 10);
+    }
+
+// Перевірка підпису ЦВК на m: m == s^e mod n
+    public function verifySignatureOnMessageNumber(string $mDec, string $sigDec, string $eDec, string $nDec): bool
+    {
+        $m = gmp_init($mDec, 10);
+        $s = gmp_init($sigDec, 10);
+        $e = gmp_init($eDec, 10);
+        $n = gmp_init($nDec, 10);
+
+        $ms = gmp_powm($s, $e, $n);
+        return gmp_cmp($m, $ms) === 0;
+    }
 }

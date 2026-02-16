@@ -1,0 +1,14 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Lab2 Setup</h1>
+    <p>
+        <a href="{{ path('lab2_request') }}">Dashboard</a> |
+        <a href="{{ path('lab2_results') }}">Results</a> |
+        <a href="{{ path('lab2_reset') }}">Reset</a>
+    </p>
+
+    <h2>CEC public key</h2>
+    <pre>{{ dump(cecPublic) }}</pre>
+    <h2>Registered voters</h2>
+    <pre>{{ dump(voters) }}</pre>
+{% endblock %}

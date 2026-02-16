@@ -1,0 +1,62 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Lab2: Blind Signatures Dashboard</h1>
+
+    <p>
+        <a href="{{ path('lab2_setup') }}">Setup</a> |
+        <a href="{{ path('lab2_results') }}">Results</a> |
+        <a href="{{ path('lab2_reset') }}">Reset</a>
+    </p>
+
+    {% if message %}
+        <h2>Last action</h2>
+        <pre>{{ dump(message) }}</pre>
+    {% endif %}
+
+    <h2>Voters</h2>
+
+    {% for v in voters %}
+        <div style="border:1px solid #ddd; padding:12px; margin:12px 0;">
+            <h3>{{ v }}</h3>
+
+            {% set data = signedByName[v] ?? null %}
+
+            {% if data %}
+                <p><b>Signed set:</b> ✅ anonId = <code>{{ data.anonId }}</code></p>
+                <details>
+                    <summary>Show signed ballots (A,B)</summary>
+                    <pre>{{ dump(data.signedBallots) }}</pre>
+                </details>
+
+                <form method="post" action="{{ path('lab2_vote_action') }}" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <input type="hidden" name="name" value="{{ v }}">
+
+                    <button name="choice" value="A" type="submit">Vote A</button>
+                    <button name="choice" value="B" type="submit">Vote B</button>
+
+                    <label style="display:flex; gap:6px; align-items:center;">
+                        <input type="checkbox" name="sendBoth" value="1">
+                        Send BOTH (test #2)
+                    </label>
+                </form>
+
+            {% else %}
+                <p><b>Signed set:</b> ❌ not issued yet</p>
+
+                <form method="post" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <input type="hidden" name="name" value="{{ v }}">
+                    <button type="submit">Request signed set</button>
+
+                    <label style="display:flex; gap:6px; align-items:center;">
+                        <input type="checkbox" name="cheat" value="1">
+                        Cheat (test #3)
+                    </label>
+                </form>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    <h2>Current results</h2>
+    <pre>{{ dump(results) }}</pre>
+
+{% endblock %}

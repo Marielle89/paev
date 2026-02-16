@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Request signed set (blind signatures)</h1>
+
+    <p><a href="{{ path('lab2_setup') }}">Setup</a> | <a href="{{ path('lab2_vote') }}">Vote</a> | <a href="{{ path('lab2_results') }}">Results</a></p>
+
+    <form method="post">
+        <label>Name:</label>
+        <select name="name">
+            <option>Voter1</option><option>Voter2</option><option>Voter3</option><option>Voter4</option><option>Voter5</option>
+        </select>
+        <label><input type="checkbox" name="cheat" value="1"> Cheat (for test #3)</label>
+        <button type="submit">Request</button>
+    </form>
+
+    {% if message %}
+        <h2>Response</h2>
+        <pre>{{ dump(message) }}</pre>
+    {% endif %}
+
+    {% if saved %}
+        <h2>Saved signed set in session</h2>
+        <pre>{{ dump(saved.anonId) }}</pre>
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Vote</h1>
+    <p><a href="{{ path('lab2_request') }}">Request</a> | <a href="{{ path('lab2_results') }}">Results</a></p>
+
+    {% if not saved %}
+        <p><b>No signed set yet.</b> Go to <a href="{{ path('lab2_request') }}">Request</a>.</p>
+    {% else %}
+        <p>Anon ID: <code>{{ saved.anonId }}</code></p>
+
+        <form method="post">
+            <label>Choice:</label>
+            <select name="choice"><option>A</option><option>B</option></select>
+            <label><input type="checkbox" name="sendBoth" value="1"> Send both ballots (test #2)</label>
+            <button type="submit">Send vote</button>
+        </form>
+    {% endif %}
+
+    {% if message %}
+        <h2>Vote response</h2>
+        <pre>{{ dump(message) }}</pre>
+    {% endif %}
+
+    <h2>Current results</h2>
+    <pre>{{ dump(results) }}</pre>
+{% endblock %}
