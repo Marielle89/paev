@@ -32,3 +32,9 @@ services:
         arguments:
             $redisHost: '%redis_host%'
             $redisPort: '%redis_port%'
+
+    App\Service\ElectionLab4Service:
+        arguments:
+            $redisHost: '%redis_host%'
+            $redisPort: '%redis_port%'
+

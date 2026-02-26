@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lab4 Setup{% endblock %}
+
+{% block body %}
+
+    <h1>System Setup</h1>
+
+    <div class="grid grid-2">
+
+        <div class="card">
+            <h3>Candidates</h3>
+            <table>
+                <tr>
+                    <th>Candidate</th>
+                    <th>ID</th>
+                </tr>
+                {% for key, id in candidates %}
+                    <tr>
+                        <td>{{ key }}</td>
+                        <td><strong>{{ id }}</strong></td>
+                    </tr>
+                {% endfor %}
+            </table>
+        </div>
+
+        <div class="card">
+            <h3>CEC Public Key</h3>
+            <p><strong>e:</strong> <code>{{ cecPublic.e }}</code></p>
+            <p><strong>n:</strong> <code>{{ cecPublic.n|slice(0,30) }}...{{ cecPublic.n|slice(-30) }}</code></p>
+        </div>
+
+    </div>
+
+{% endblock %}

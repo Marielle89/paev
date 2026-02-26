@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h1>Publish & Tally</h1>
+
+    <div class="card">
+        <form method="post" style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn" name="action" value="vk1">VK1 Publish</button>
+            <button class="btn" name="action" value="vk2">VK2 Publish</button>
+            <button class="btn btn-secondary" name="action" value="tally">
+                CEC Tally
+            </button>
+        </form>
+    </div>
+
+    <div class="grid grid-2">
+
+        <div class="card">
+            <h3>VK1 Published</h3>
+            <pre>{{ results.vk1Published|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+
+        <div class="card">
+            <h3>VK2 Published</h3>
+            <pre>{{ results.vk2Published|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+
+    </div>
+
+{% endblock %}

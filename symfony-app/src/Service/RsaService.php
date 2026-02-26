@@ -137,4 +137,27 @@ final readonly class RsaService
         return gmp_cmp($m, $ms) === 0;
     }
 
+    public function encryptNumber(string $mDec, string $eDec, string $nDec): string
+    {
+        $m = gmp_init($mDec, 10);
+        $e = gmp_init($eDec, 10);
+        $n = gmp_init($nDec, 10);
+        return gmp_strval(gmp_powm($m, $e, $n), 10);
+    }
+
+    public function decryptNumber(string $cDec, string $dDec, string $nDec): string
+    {
+        $c = gmp_init($cDec, 10);
+        $d = gmp_init($dDec, 10);
+        $n = gmp_init($nDec, 10);
+        return gmp_strval(gmp_powm($c, $d, $n), 10);
+    }
+
+    public function mulCipher(string $c1Dec, string $c2Dec, string $nDec): string
+    {
+        $c1 = gmp_init($c1Dec, 10);
+        $c2 = gmp_init($c2Dec, 10);
+        $n  = gmp_init($nDec, 10);
+        return gmp_strval(gmp_mod(gmp_mul($c1, $c2), $n), 10);
+    }
 }

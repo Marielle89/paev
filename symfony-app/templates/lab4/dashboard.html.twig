@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Voting Dashboard{% endblock %}
+
+{% block body %}
+
+    <h1>Voting Dashboard</h1>
+
+    {% if last %}
+        <div class="card">
+            <h3>Last Action</h3>
+            <pre>{{ last|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+        </div>
+    {% endif %}
+
+    <div class="grid grid-2">
+
+        {% for v in voters %}
+            <div class="card">
+                <h3>{{ v }}</h3>
+
+                <p>
+                    <strong>Anon ID:</strong>
+                    {{ state[v].anonId ?? '—' }}
+                </p>
+
+                <p>
+                    <strong>Last Vote:</strong>
+                    {{ state[v].lastChoice ?? '—' }}
+                </p>
+
+                <form method="post" class="form-row">
+                    <input type="hidden" name="name" value="{{ v }}">
+
+                    <div class="pill-group" role="group" aria-label="Candidate choice">
+                        <label>
+                            <input type="radio" name="choice" value="A" checked>
+                            <span class="pill">A <small>ID {{ candidates.A }}</small></span>
+                        </label>
+
+                        <label>
+                            <input type="radio" name="choice" value="B">
+                            <span class="pill">B <small>ID {{ candidates.B }}</small></span>
+                        </label>
+                    </div>
+
+                    <label class="checkbox">
+                        <input type="checkbox" name="breakSig" value="1">
+                        Break VK1 signature
+                    </label>
+
+                    <button class="btn">Send vote</button>
+                </form>
+            </div>
+        {% endfor %}
+
+    </div>
+
+{% endblock %}

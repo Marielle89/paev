@@ -1,0 +1,61 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h1>Final Results</h1>
+
+    <div class="card">
+        <h3>Tally</h3>
+
+        <table>
+            <tr>
+                <th>Candidate</th>
+                <th>Votes</th>
+            </tr>
+            <tr>
+                <td>A</td>
+                <td>{{ results.tally.A }}</td>
+            </tr>
+            <tr>
+                <td>B</td>
+                <td>{{ results.tally.B }}</td>
+            </tr>
+            <tr>
+                <td>Invalid</td>
+                <td>{{ results.tally.invalid }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>Votes by Anon ID</h3>
+        <table>
+            <tr>
+                <th>Anon ID</th>
+                <th>Result</th>
+            </tr>
+            {% for id,res in results.cecResults %}
+                <tr>
+                    <td>{{ id }}</td>
+                    <td>
+                        {% if res == 'A' %}
+                            <span class="tag tag-success">A</span>
+                        {% elseif res == 'B' %}
+                            <span class="tag tag-success">B</span>
+                        {% else %}
+                            <span class="tag tag-danger">{{ res }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <div class="card">
+        <h3>System Log</h3>
+        <div class="log-box">
+            {{ results.log|join("\n") }}
+        </div>
+    </div>
+
+{% endblock %}
