@@ -1,0 +1,17 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Lab3 Setup</h1>
+
+    <p>
+        <a href="{{ path('lab3_br') }}">BR (Registration)</a> |
+        <a href="{{ path('lab3_vote') }}">Vote</a> |
+        <a href="{{ path('lab3_results') }}">Results</a> |
+        <a href="{{ path('lab3_reset') }}">Reset</a>
+    </p>
+
+    <h2>EC public key</h2>
+    <pre>{{ dump(ecPublic) }}</pre>
+
+    <h2>Voters</h2>
+    <pre>{{ dump(voters) }}</pre>
+{% endblock %}

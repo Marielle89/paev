@@ -78,7 +78,7 @@ final readonly class RsaService
      * RSA шифрування/дешифрування по байтах
      * c_i = m_i^e mod n, m_i in [0..255]
      */
-    public function encryptString(string $plain, string $eDec, string $nDec): array
+    public function encryptString(string $plain, string $eDec, string $nDec): string
     {
         $n = gmp_init($nDec, 10);
         $e = gmp_init($eDec, 10);
@@ -88,22 +88,31 @@ final readonly class RsaService
         foreach ($bytes as $b) {
             $out[] = gmp_strval(gmp_powm(gmp_init($b), $e, $n), 10);
         }
-        return $out; // array of decimal strings
+
+        // важливо: повертаємо саме РЯДОК, щоб без проблем передавати/зберігати
+        return json_encode($out, JSON_UNESCAPED_UNICODE);
     }
 
-    public function decryptString(array $cipherDecArray, string $dDec, string $nDec): string
+
+    public function decryptString(string $cipherJson, string $dDec, string $nDec): string
     {
         $n = gmp_init($nDec, 10);
         $d = gmp_init($dDec, 10);
 
+        $parts = json_decode($cipherJson, true);
+        if (!is_array($parts)) {
+            throw new \InvalidArgumentException('Cipher must be JSON array');
+        }
+
         $bytes = [];
-        foreach ($cipherDecArray as $cDec) {
+        foreach ($parts as $cDec) {
             $m = gmp_powm(gmp_init((string)$cDec, 10), $d, $n);
-            $bytes[] = (int) gmp_strval($m, 10);
+            $bytes[] = (int)gmp_strval($m, 10);
         }
 
         return pack('C*', ...$bytes);
     }
+
 
     private function randomPrime(int $bits): \GMP
     {
@@ -116,4 +125,16 @@ final readonly class RsaService
 
         return gmp_nextprime($num);
     }
+
+    public function verifySignatureOnMessageNumber(string $mDec, string $sigDec, string $eDec, string $nDec): bool
+    {
+        $m = gmp_init($mDec, 10);
+        $s = gmp_init($sigDec, 10);
+        $e = gmp_init($eDec, 10);
+        $n = gmp_init($nDec, 10);
+
+        $ms = gmp_powm($s, $e, $n);
+        return gmp_cmp($m, $ms) === 0;
+    }
+
 }

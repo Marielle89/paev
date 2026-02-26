@@ -1,0 +1,42 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Results + Verification</h1>
+
+    <p>
+        <a href="{{ path('lab3_vote') }}">Vote</a> |
+        <a href="{{ path('lab3_br') }}">BR</a> |
+        <a href="{{ path('lab3_setup') }}">Setup</a>
+    </p>
+
+    <h2>Tally</h2>
+    <pre>{{ dump(results.tally) }}</pre>
+
+    <h2>Published list (ID -> ballot)</h2>
+    <pre>{{ dump(results.published) }}</pre>
+
+    <h2>Check my vote</h2>
+    <form method="post" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <input name="id" placeholder="Your ID">
+        <select name="expected">
+            <option value="A">I voted A</option>
+            <option value="B">I voted B</option>
+        </select>
+        <button type="submit">Check</button>
+    </form>
+
+    {% if check %}
+        <h3>Check result</h3>
+        <pre>{{ dump(check) }}</pre>
+
+        {% if check.ok and check.match == false %}
+            <p style="color:red;"><b>WARNING:</b> Published vote does NOT match what voter claims.</p>
+        {% endif %}
+    {% endif %}
+
+    <h2>BR log</h2>
+    <pre>{{ results.brLog|join("\n") }}</pre>
+
+    <h2>EC log</h2>
+    <pre>{{ results.ecLog|join("\n") }}</pre>
+
+{% endblock %}

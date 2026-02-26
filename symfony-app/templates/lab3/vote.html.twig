@@ -1,0 +1,49 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>Vote (encrypted + signed)</h1>
+
+    <p>
+        <a href="{{ path('lab3_br') }}">BR</a> |
+        <a href="{{ path('lab3_results') }}">Results</a> |
+        <a href="{{ path('lab3_setup') }}">Setup</a>
+    </p>
+
+    {% if last %}
+        <h2>Last action</h2>
+        <pre>{{ dump(last) }}</pre>
+    {% endif %}
+
+    {% for v in voters %}
+        <div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+            <h3>{{ v }}</h3>
+            RN: <code>{{ state[v].rn ?? '— (get RN first)' }}</code><br>
+            ID: <code>{{ state[v].id ?? '— (auto on first vote)' }}</code><br>
+            Expected vote: <code>{{ state[v].expectedVote ?? '—' }}</code>
+
+            <form method="post" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:8px;">
+                <input type="hidden" name="name" value="{{ v }}">
+                <select name="vote">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                </select>
+
+                <select name="mode">
+                    <option value="normal">Normal vote</option>
+                    <option value="rn_again">Try vote again with same RN (test #2)</option>
+                    <option value="id_again">Try vote again with same ID (test #2)</option>
+                    <option value="invalid_rn">Send invalid RN (test #2)</option>
+                </select>
+
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <h2>Current tally + published</h2>
+    <pre>{{ dump(results.tally) }}</pre>
+    <details>
+        <summary>Published list (ID -> ballot)</summary>
+        <pre>{{ dump(results.published) }}</pre>
+    </details>
+
+{% endblock %}

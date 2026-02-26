@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <h1>BR: Issue RN</h1>
+
+    <p>
+        <a href="{{ path('lab3_setup') }}">Setup</a> |
+        <a href="{{ path('lab3_vote') }}">Vote</a> |
+        <a href="{{ path('lab3_results') }}">Results</a>
+    </p>
+
+    {% if last %}
+        <h2>Last action</h2>
+        <pre>{{ dump(last) }}</pre>
+    {% endif %}
+
+    <h2>Voters</h2>
+    {% for v in voters %}
+        <div style="border:1px solid #ddd; padding:10px; margin:10px 0;">
+            <b>{{ v }}</b><br>
+            RN: <code>{{ state[v].rn ?? '—' }}</code>
+
+            <form method="post" style="margin-top:8px;">
+                <input type="hidden" name="name" value="{{ v }}">
+                <input type="hidden" name="action" value="issue">
+                <button type="submit">Get RN</button>
+            </form>
+        </div>
+    {% endfor %}
+
+    <form method="post" style="margin-top:18px;">
+        <input type="hidden" name="action" value="send">
+        <button type="submit">Send RN list to EC</button>
+    </form>
+
+    <h2>EC public</h2>
+    <pre>{{ dump(ecPublic) }}</pre>
+
+{% endblock %}
