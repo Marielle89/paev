@@ -13,6 +13,7 @@ final class ElectionLab4Service
     private const KEY_RESULTS    = 'lab4_cec_results';  // hash anonId -> candidateId
     private const KEY_TALLY      = 'lab4_tally';        // hash A,B,invalid
     private const KEY_LOG        = 'lab4_log';          // list
+    private const KEY_DECRYPTED = 'lab4_cec_decrypted'; // hash anonId -> decrypted number (m)
 
     public function __construct(
         private readonly RsaService $rsa,
@@ -177,6 +178,8 @@ final class ElectionLab4Service
         // match by anonId
         $allIds = array_unique(array_merge(array_keys($pub1), array_keys($pub2)));
 
+        $this->redis->del(self::KEY_DECRYPTED);
+
         foreach ($allIds as $anonId) {
             if (!isset($pub1[$anonId], $pub2[$anonId])) {
                 $this->redis->hSet(self::KEY_RESULTS, $anonId, 'missing_part');
@@ -195,6 +198,7 @@ final class ElectionLab4Service
             // 2) THEN decrypt
             $m = $this->rsa->decryptNumber($combinedCipher, $cec['d'], $cec['n']);
             $this->log("CEC: decrypt anonId={$anonId}: m = Dec(c) = {$m}");
+            $this->redis->hSet(self::KEY_DECRYPTED, $anonId, $m);
 
             if ((int)$m === $cand['A']) {
                 $this->redis->hSet(self::KEY_RESULTS, $anonId, 'A');
@@ -227,6 +231,7 @@ final class ElectionLab4Service
             ],
             'log' => $this->redis->lRange(self::KEY_LOG, 0, -1) ?: [],
             'candidates' => $this->candidates(),
+            'cecDecrypted' => $this->redis->hGetAll(self::KEY_DECRYPTED) ?: [],
         ];
     }
 

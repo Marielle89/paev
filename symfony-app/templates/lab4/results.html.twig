@@ -58,4 +58,30 @@
         </div>
     </div>
 
+    <div class="card">
+        <h3>Decrypted numbers (proof)</h3>
+
+        <table>
+            <tr>
+                <th>Anon ID</th>
+                <th>Decrypted m</th>
+                <th>Interpretation</th>
+            </tr>
+            {% for id,m in results.cecDecrypted %}
+                <tr>
+                    <td>{{ id }}</td>
+                    <td><code>{{ m }}</code></td>
+                    <td>
+                        {% if m == results.candidates.A %}
+                            <span class="tag tag-success">A ({{ results.candidates.A }})</span>
+                        {% elseif m == results.candidates.B %}
+                            <span class="tag tag-success">B ({{ results.candidates.B }})</span>
+                        {% else %}
+                            <span class="tag tag-danger">invalid</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 {% endblock %}
