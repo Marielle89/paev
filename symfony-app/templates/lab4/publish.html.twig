@@ -28,4 +28,27 @@
 
     </div>
 
+    <div class="card">
+        <h3>Test #2: Tamper VK1 published part</h3>
+
+        <form method="post" class="form-row">
+            <input type="hidden" name="action" value="tamper_vk1">
+
+            <label>
+                <div style="font-weight:600; margin-bottom:6px;">Anon ID</div>
+                <input name="anonId" placeholder="paste anonId" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; width:260px;">
+            </label>
+
+            <label>
+                <div style="font-weight:600; margin-bottom:6px;">New cipher (dec)</div>
+                <input name="newCipher" placeholder="any decimal string" style="padding:8px 10px; border:1px solid #e5e7eb; border-radius:8px; width:320px;">
+            </label>
+
+            <button class="btn btn-danger" type="submit">Tamper VK1</button>
+        </form>
+
+        <p style="margin-top:10px; color:#6b7280;">
+            Це симуляція атаки: ВК-1 публікує підмінений шифротекст. ЦВК має виявити це при дешифруванні (отримає число, яке не 24/30 → invalid).
+        </p>
+    </div>
 {% endblock %}
