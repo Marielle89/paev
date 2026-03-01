@@ -1,0 +1,143 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lab5 — Voting without commission{% endblock %}
+
+{% block body %}
+    <style>
+        .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+        .row { display:flex; gap:10px; flex-wrap: wrap; align-items: center; }
+        .btn { border: 1px solid #1d4ed8; background:#1d4ed8; color:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+        .btn.secondary{ background:#fff; color:#1d4ed8; }
+        .btn.danger{ background:#b91c1c; border-color:#b91c1c; }
+        select, input { border:1px solid #ddd; border-radius:10px; padding:8px 10px; }
+        .muted { color:#666; font-size: 13px; }
+        pre { background:#0b1020; color:#e8eefc; padding:10px; border-radius:12px; overflow:auto; max-height: 240px; }
+        code { background:#f3f4f6; padding:2px 6px; border-radius:8px; }
+        .kpi { display:flex; gap:14px; flex-wrap: wrap; }
+        .kpi .pill { background:#f3f4f6; border-radius:999px; padding:6px 10px; font-weight:700; }
+        .full { grid-column: 1 / -1; }
+    </style>
+
+    <div class="wrap">
+        <h1>Lab5 — Протокол без виборчої комісії</h1>
+        <div class="muted">Стадія: <code>{{ state.stage }}</code> • Бюлетенів у списку: <code>{{ state.list|length }}</code> • Останній підпис: <code>{{ state.sigBy ?: '—' }}</code></div>
+
+        {% for type, messages in app.flashes %}
+            <div class="card" style="border-color:#fca5a5;background:#fff1f2;">
+                <b>{{ type|upper }}</b>: {{ messages|join(', ') }}
+            </div>
+        {% endfor %}
+
+        <div class="row" style="margin:12px 0;">
+            <form method="post" action="{{ path('lab5_setup') }}">
+                <button class="btn" type="submit">Setup (створити 5 виборців)</button>
+            </form>
+            <form method="post" action="{{ path('lab5_reset') }}">
+                <button class="btn danger" type="submit">Reset</button>
+            </form>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>1) Голосування (вибір кандидата)</h3>
+                <div class="muted">Кандидати: A = 24, B = 30</div>
+
+                <form method="post" action="{{ path('lab5_vote') }}" class="row" style="margin-top:10px;">
+                    <select name="voter" required>
+                        {% for v in state.voters %}
+                            <option value="{{ v }}">{{ v }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select name="choice" required>
+                        <option value="A">Candidate A (24)</option>
+                        <option value="B">Candidate B (30)</option>
+                    </select>
+
+                    <button class="btn" type="submit">Зберегти голос</button>
+                </form>
+
+                <div style="margin-top:10px;">
+                    <div class="muted">Поточні бюлетені (plain, до шифрування):</div>
+                    <pre>{{ state.plain|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>2) Запуск протоколу</h3>
+                <div class="row" style="margin-top:10px;">
+                    <form method="post" action="{{ path('lab5_encrypt') }}">
+                        <button class="btn" type="submit">Encrypt 2 rounds → “send to A”</button>
+                    </form>
+                </div>
+
+                <div class="row" style="margin-top:10px;">
+                    <form method="post" action="{{ path('lab5_decrypt', {round: 1}) }}">
+                        <button class="btn secondary" type="submit">Decrypt Round 1 (A→E)</button>
+                    </form>
+                    <form method="post" action="{{ path('lab5_decrypt', {round: 2}) }}">
+                        <button class="btn secondary" type="submit">Decrypt Round 2 (A→E)</button>
+                    </form>
+                    <form method="post" action="{{ path('lab5_tally') }}">
+                        <button class="btn" type="submit">Tally</button>
+                    </form>
+                </div>
+
+                <div class="kpi" style="margin-top:10px;">
+                    <div class="pill">A: {{ state.tally.A }}</div>
+                    <div class="pill">B: {{ state.tally.B }}</div>
+                    <div class="pill">Invalid: {{ state.tally.invalid }}</div>
+                </div>
+            </div>
+
+            <div class="card full">
+                <h3>Поточний список бюлетенів (циркулює між виборцями)</h3>
+                <div class="muted">Зверни увагу: на етапі encryption це довгі шифротексти; після round2 decrypt — відкриті бюлетені.</div>
+                <pre>{{ state.list|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card">
+                <h3>3) Тести шахрайства (для звіту)</h3>
+                <div class="muted">Ці дії потрібні, щоб довести: підміна/вилучення/додавання викривається.</div>
+
+                <div style="margin-top:10px;">
+                    <b>Підміна одного бюлетеня</b>
+                    <form method="post" action="{{ path('lab5_tamper') }}" class="row" style="margin-top:6px;">
+                        <input type="number" name="index" min="0" placeholder="index (0..)" required>
+                        <input type="text" name="value" placeholder="нове значення (будь-що)" required style="min-width:260px;">
+                        <button class="btn danger" type="submit">Tamper</button>
+                    </form>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <b>Вилучення бюлетеня</b>
+                    <form method="post" action="{{ path('lab5_remove') }}" class="row" style="margin-top:6px;">
+                        <input type="number" name="index" min="0" placeholder="index" required>
+                        <button class="btn danger" type="submit">Remove</button>
+                    </form>
+                </div>
+
+                <div style="margin-top:10px;">
+                    <b>Додати зайвий бюлетень</b>
+                    <form method="post" action="{{ path('lab5_add') }}" class="row" style="margin-top:6px;">
+                        <input type="text" name="value" placeholder="значення (будь-що)" required style="min-width:260px;">
+                        <button class="btn danger" type="submit">Add</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Ключі (скорочено)</h3>
+                <div class="muted">Довгі значення обрізані, щоб UI був охайний.</div>
+                <pre>{{ state.keysShort|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card full">
+                <h3>Лог протоколу</h3>
+                <pre>{{ state.log|join("\n") }}</pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}
