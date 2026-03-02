@@ -41,7 +41,6 @@ final class ElectionLab5Service
     }
 
     /**
-     * SETUP:
      * - генеруємо спільний модуль n (shared n) для всіх
      * - кожному виборцю генеруємо свій (e,d), але на цьому ж n
      */
@@ -89,7 +88,6 @@ final class ElectionLab5Service
      * Encrypt 2 rounds:
      * - беремо 5 чисел (candidateId)
      * - робимо 2 раунди onion RSA: E->D->C->B->A
-     * ВАЖЛИВО: тут більше НЕ додаємо RP, бо воно математично ламається на великих ciphertext.
      */
     public function encryptTwoRounds(): array
     {
@@ -122,11 +120,8 @@ final class ElectionLab5Service
     /**
      * Decrypt round:
      * A->B->C->D->E
-     * Перевірки:
      * 1) signature chain (підміна виявляється)
      * 2) count==5 (видалення/підкидання виявляється)
-     *
-     * RP тут НЕ використовується (див. пояснення вище).
      */
     public function decryptRound(int $round): array
     {
@@ -138,7 +133,7 @@ final class ElectionLab5Service
             $this->redis->del(self::KEY_SIG_BY, self::KEY_SIG);
             $this->log("DECRYPT ROUND 2: signature chain reset");
         }
-        // ✅ Виявляє видалення / підкидання бюлетенів
+        // Виявляє видалення / підкидання бюлетенів
         if (count($list) !== 5) {
             $this->log("DECRYPT ROUND {$round}: ABORT (count=" . count($list) . ", expected=5)");
             return ['ok'=>false,'error'=>'BALLOT_COUNT_MISMATCH'];
@@ -148,7 +143,7 @@ final class ElectionLab5Service
         $prevSig    = (string)($this->redis->get(self::KEY_SIG) ?: '');
 
         foreach (self::VOTERS as $voter) {
-            // ✅ Виявляє підміну списку між кроками
+            // Виявляє підміну списку між кроками
             if ($prevSigner !== '' && $prevSig !== '') {
                 if (!$this->verifyListSignature($list, $round, $prevSigner, $prevSig)) {
                     $this->log("DECRYPT ROUND {$round}: {$voter} REJECT (bad signature from {$prevSigner})");
@@ -208,7 +203,6 @@ final class ElectionLab5Service
         return ['ok'=>true];
     }
 
-    // -------------------- TEST actions for UI --------------------
 
     /** Підміна одного бюлетеня (імітація шахрайства) */
     public function tamperAtIndex(int $index, string $newCipherDec): array
@@ -246,8 +240,6 @@ final class ElectionLab5Service
         $this->log("ADD: added extra ballot");
         return ['ok'=>true];
     }
-
-    // -------------------- internal --------------------
 
     private function encryptRound(array $list, int $round): array
     {
@@ -353,7 +345,7 @@ final class ElectionLab5Service
 
         $sharedN = (string)($this->redis->get(self::KEY_SHARED_N) ?: '');
 
-        // ✅ keysShort: щоб Twig не падав і ключі не рвали верстку
+        // keysShort: щоб Twig не падав і ключі не рвали верстку
         $keysShort = [];
         $keys = $this->redis->hGetAll(self::KEY_KEYS) ?: [];
         foreach ($keys as $v => $json) {
@@ -375,11 +367,9 @@ final class ElectionLab5Service
             'plain' => $plain,
             'list'  => $list,
 
-            // ✅ лишаємо для твого Twig
             'sigBy' => $sigBy,
             'sig'   => $this->short($sig, 12),
 
-            // ✅ додаємо, щоб не падало на інших місцях, якщо десь є rp
             'rp' => array_fill_keys(self::VOTERS, '—'),
 
             'tally' => [
@@ -388,7 +378,6 @@ final class ElectionLab5Service
                 'invalid' => (int)($t['invalid'] ?? 0),
             ],
 
-            // ✅ ключове: Twig чекає це поле
             'keysShort' => $keysShort,
 
             'log' => $this->redis->lRange(self::KEY_LOG, 0, -1) ?: [],
