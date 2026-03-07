@@ -94,13 +94,13 @@
 
             <div class="card full">
                 <h3>Поточний список бюлетенів (циркулює між виборцями)</h3>
-                <div class="muted">Зверни увагу: на етапі encryption це довгі шифротексти; після round2 decrypt — відкриті бюлетені.</div>
+                <div class="muted">на етапі encryption - шифротексти; після round2 decrypt — відкриті бюлетені</div>
                 <pre>{{ state.list|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
             </div>
 
             <div class="card">
                 <h3>3) Тести шахрайства (для звіту)</h3>
-                <div class="muted">Ці дії потрібні, щоб довести: підміна/вилучення/додавання викривається.</div>
+                <div class="muted">підміна/вилучення/додавання</div>
 
                 <div style="margin-top:10px;">
                     <b>Підміна одного бюлетеня</b>
@@ -130,7 +130,7 @@
 
             <div class="card">
                 <h3>Ключі (скорочено)</h3>
-                <div class="muted">Довгі значення обрізані, щоб UI був охайний.</div>
+                <div class="muted">(значення обрізані)</div>
                 <pre>{{ state.keysShort|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
             </div>
 

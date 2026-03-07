@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 final class ElectionLab5Service
