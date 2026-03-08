@@ -150,4 +150,42 @@ final class RsaService
             }
         }
     }
+
+    public function generateKeyPair(int $bits = 512): array
+    {
+        // Генеруємо два простих числа p та q
+        $p = $this->randomPrime(intdiv($bits, 2));
+        do { $q = $this->randomPrime(intdiv($bits, 2)); } while (gmp_cmp($p, $q) === 0);
+
+        $n   = gmp_mul($p, $q); // модуль RSA, буде частиною і публічного, і приватного ключа.
+        $phi = gmp_mul(gmp_sub($p, 1), gmp_sub($q, 1)); // функція Ейлера
+
+        $e = gmp_init(65537);
+        while (gmp_cmp(gmp_gcd($e, $phi), 1) !== 0) {
+            $e = gmp_add($e, 2); // e збільшується на 2, поки не стане взаємно простим з phi
+        }
+
+        $d = gmp_invert($e, $phi); // знаходимо приватну експоненту, якщо оберненого не існує кидаємо виключення
+        if ($d === false) {
+            throw new \RuntimeException('No modular inverse for d');
+        }
+
+        return [
+            'n' => gmp_strval($n, 10),
+            'e' => gmp_strval($e, 10),
+            'd' => gmp_strval($d, 10),
+        ];
+    }
+
+    private function randomPrime(int $bits): \GMP
+    {
+        $bytes = intdiv($bits + 7, 8);
+        $rand = random_bytes($bytes);
+        $rand[0] = $rand[0] | chr(0x80); // старший біт (0x80) у першому байті
+        $rand[$bytes - 1] = $rand[$bytes - 1] | chr(0x01); // робимо чило парним => точно не може бути простим
+
+        $num = gmp_import($rand);
+
+        return gmp_nextprime($num);
+    }
 }

@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Lab6 — Protocol Design{% endblock %}
+
+{% block body %}
+    <style>
+        .wrap { max-width: 1200px; margin: 24px auto; padding: 0 16px; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .card { background: #fff; border: 1px solid #e6e6e6; border-radius: 14px; padding: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+        .full { grid-column: 1 / -1; }
+        .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+        .btn { border: 1px solid #1d4ed8; background:#1d4ed8; color:#fff; padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600; }
+        .btn.secondary { background:#fff; color:#1d4ed8; }
+        .btn.danger { background:#b91c1c; border-color:#b91c1c; }
+        select, input { border:1px solid #ddd; border-radius:10px; padding:8px 10px; }
+        pre { background:#0b1020; color:#e8eefc; padding:10px; border-radius:12px; overflow:auto; max-height: 260px; white-space: pre-wrap; word-break: break-word; }
+        code { background:#f3f4f6; padding:2px 6px; border-radius:8px; }
+        .muted { color:#666; font-size: 13px; }
+    </style>
+
+    <div class="wrap">
+        <h1>Lab6 — Проектування протоколу Е-голосування</h1>
+
+        {% for type, messages in app.flashes %}
+            <div class="card" style="border-color:#fca5a5;background:#fff1f2;">
+                <b>{{ type|upper }}</b>: {{ messages|join(', ') }}
+            </div>
+        {% endfor %}
+
+        <div class="row" style="margin-bottom:14px;">
+            <form method="post" action="{{ path('lab6_setup') }}">
+                <button class="btn" type="submit">Setup</button>
+            </form>
+            <form method="post" action="{{ path('lab6_reset') }}">
+                <button class="btn danger" type="submit">Reset</button>
+            </form>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>CEC keys</h3>
+                <pre>{{ state.cecShort|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card">
+                <h3>Medium keys</h3>
+                <pre>{{ state.keysShort|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card full">
+                <h3>BR Registry + Tokens</h3>
+                <table style="width:100%; border-collapse: collapse;">
+                    <thead>
+                    <tr>
+                        <th align="left">Voter</th>
+                        <th align="left">RN / Medium / Token</th>
+                        <th align="left">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for voter in state.voters %}
+                        <tr>
+                            <td style="padding:8px 0;"><b>{{ voter }}</b></td>
+                            <td>
+                                <div class="muted">
+                                    RN: {{ state.registry[voter].rn|default('—') }},
+                                    Medium: {{ state.registry[voter].medium|default('—') }},
+                                    tokenIssued: {{ state.registry[voter].tokenIssued ? 'yes' : 'no' }}
+                                </div>
+                                <div class="muted">
+                                    ballotId: {{ state.tokens[voter].ballotId|default('—') }},
+                                    used: {{ state.tokens[voter].used ? 'yes' : 'no' }}
+                                </div>
+                            </td>
+                            <td>
+                                <form method="post" action="{{ path('lab6_request_token') }}" style="display:inline-flex; gap:8px; align-items:center;">
+                                    <input type="hidden" name="voter" value="{{ voter }}">
+                                    <button class="btn secondary" type="submit">Request blind token</button>
+                                </form>
+
+                                <form method="post" action="{{ path('lab6_vote') }}" style="display:inline-flex; gap:8px; align-items:center; margin-left:8px;">
+                                    <input type="hidden" name="voter" value="{{ voter }}">
+                                    <select name="choice">
+                                        <option value="A">Candidate A (24)</option>
+                                        <option value="B">Candidate B (30)</option>
+                                    </select>
+                                    <button class="btn" type="submit">Cast vote</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h3>Low commissions</h3>
+                <div class="muted">L1/L2 → M1, L3/L4 → M2</div>
+                <pre>{{ state.lows|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card">
+                <h3>Medium tally</h3>
+                <div class="row" style="margin-bottom:10px;">
+                    <form method="post" action="{{ path('lab6_medium_tally', {medium: 'M1'}) }}">
+                        <button class="btn secondary" type="submit">Tally M1</button>
+                    </form>
+                    <form method="post" action="{{ path('lab6_medium_tally', {medium: 'M2'}) }}">
+                        <button class="btn secondary" type="submit">Tally M2</button>
+                    </form>
+                    <form method="post" action="{{ path('lab6_final_tally') }}">
+                        <button class="btn" type="submit">CEC Final Tally</button>
+                    </form>
+                </div>
+                <pre>{{ state.mediumDecoded|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+            </div>
+
+            <div class="card full">
+                <h3>CEC publish</h3>
+                <pre>{{ state.publish|json_encode(constant('JSON_PRETTY_PRINT')) }}</pre>
+                <div class="muted">Totals: A={{ state.tally.A }}, B={{ state.tally.B }}, invalid={{ state.tally.invalid }}</div>
+            </div>
+
+            <div class="card">
+                <h3>Test: Tamper low part</h3>
+                <form method="post" action="{{ path('lab6_tamper_low') }}" class="row">
+                    <select name="low">
+                        <option value="L1">L1</option>
+                        <option value="L2">L2</option>
+                        <option value="L3">L3</option>
+                        <option value="L4">L4</option>
+                    </select>
+                    <input name="ballotId" placeholder="ballotId">
+                    <input name="cipher" placeholder="new cipher">
+                    <button class="btn danger" type="submit">Tamper</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Test: Remove low part</h3>
+                <form method="post" action="{{ path('lab6_remove_low') }}" class="row">
+                    <select name="low">
+                        <option value="L1">L1</option>
+                        <option value="L2">L2</option>
+                        <option value="L3">L3</option>
+                        <option value="L4">L4</option>
+                    </select>
+                    <input name="ballotId" placeholder="ballotId">
+                    <button class="btn danger" type="submit">Remove</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h3>Test: Add fake low part</h3>
+                <form method="post" action="{{ path('lab6_add_fake_low') }}" class="row">
+                    <select name="low">
+                        <option value="L1">L1</option>
+                        <option value="L2">L2</option>
+                        <option value="L3">L3</option>
+                        <option value="L4">L4</option>
+                    </select>
+                    <input name="ballotId" placeholder="fake ballotId">
+                    <input name="cipher" placeholder="fake cipher">
+                    <button class="btn danger" type="submit">Add fake</button>
+                </form>
+            </div>
+
+            <div class="card full">
+                <h3>Log</h3>
+                <pre>{{ state.log|join("\n") }}</pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}
